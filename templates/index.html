@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangalore House Price Insights</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob shape-1"></div>
+        <div class="blob shape-2"></div>
+        <div class="blob shape-3"></div>
+    </div>
+
+    <div class="container main-wrapper">
+        <!-- HEADER -->
+        <header class="text-center mb-10">
+            <h1>Bangalore <span class="text-gradient">Real Estate</span></h1>
+            <p class="subtitle">Predict housing prices with our advanced AI model.</p>
+        </header>
+
+        <div class="grid-layout">
+            <!-- INPUT FORM -->
+            <div class="glass-card form-section">
+                <h2>Property Details</h2>
+                <form method="POST">
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label>Area (sq ft)</label>
+                            <input type="number" name="Area" placeholder="e.g. 1500" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Bedrooms</label>
+                            <input type="number" name="Bedrooms" placeholder="e.g. 3" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Bathrooms</label>
+                            <input type="number" name="Bathrooms" placeholder="e.g. 2" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Floors</label>
+                            <input type="number" name="Floors" placeholder="e.g. 1" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Year Built</label>
+                            <input type="number" name="YearBuilt" placeholder="e.g. 2018" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Location</label>
+                            <div class="select-wrapper">
+                                <select name="Location" required>
+                                    <option value="" disabled selected>Select Area...</option>
+                                    <option value="Downtown">Downtown</option>
+                                    <option value="Suburban">Suburban</option>
+                                    <option value="Rural">Rural</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Condition</label>
+                            <div class="select-wrapper">
+                                <select name="Condition" required>
+                                    <option value="" disabled selected>Select State...</option>
+                                    <option value="Excellent">Excellent (New/Renovated)</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Fair">Fair</option>
+                                    <option value="Poor">Poor</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Garage</label>
+                            <div class="select-wrapper">
+                                <select name="Garage" required>
+                                    <option value="" disabled selected>Includes Garage?</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary mt-6">
+                        <span>Predict Value</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="animate-arrow">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    
+                    {% if error %}
+                        <div class="error-msg">{{ error }}</div>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="right-panel">
+                <!-- PREDICTION RESULT -->
+                <div class="glass-card result-section {% if not prediction %}empty{% endif %}">
+                    {% if prediction %}
+                        <h2>Estimated Price</h2>
+                        <div class="price-display">
+                            <span class="currency">₹</span>
+                            <span class="amount" id="animatedPrice" data-target="{{ prediction }}">0</span>
+                        </div>
+                        <p class="result-subtext">Based on current market conditions</p>
+                        
+                        {% if ai_insight %}
+                        <div class="ai-insight-box mt-4" style="background: rgba(79, 70, 229, 0.1); padding: 1.25rem; border-radius: 12px; border: 1px dashed var(--primary); margin-top: 1.5rem;">
+                            <p style="font-size: 0.95rem; color: var(--text-main); line-height: 1.5;"><strong>{{ ai_insight }}</strong></p>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="icon-holder">🏠</div>
+                            <p>Fill out the details to see the predicted price here.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- HISTORY OR CHARTS -->
+                <div class="glass-card extra-section mt-4">
+                    {% if feature_importances and prediction %}
+                        <h2>Feature Impact</h2>
+                        <div class="chart-container">
+                            <canvas id="importanceChart"></canvas>
+                        </div>
+                        <script>
+                            const fData = JSON.parse('{{ feature_importances|safe }}');
+                            const ctx = document.getElementById('importanceChart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: Object.keys(fData),
+                                    datasets: [{
+                                        data: Object.values(fData),
+                                        backgroundColor: [
+                                            '#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#facc15', '#10b981', '#0ea5e9', '#6366f1'
+                                        ],
+                                        borderWidth: 0,
+                                        hoverOffset: 4
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { position: 'right', labels: { color: '#e2e8f0', font: { family: 'Outfit' } } } }
+                                }
+                            });
+                        </script>
+                    {% else %}
+                        <h2>Recent Inquiries</h2>
+                        {% if history %}
+                            <div class="history-list">
+                                {% for item in history %}
+                                    <div class="history-item">
+                                        <div class="hist-details">
+                                            <span class="hist-title">{{ item.location }}, {{ item.area }} sqft</span>
+                                            <span class="hist-subtitle">{{ item.bedrooms }}B • {{ item.bathrooms }}B • {{ item.condition }}</span>
+                                        </div>
+                                        <div class="hist-price">₹{{ '{:,.0f}'.format(item.predicted_price) }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-sm opacity-70">No recent predictions found.</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS for Counter Animation -->
+    <script>
+        const priceEl = document.getElementById('animatedPrice');
+        if (priceEl) {
+            const target = parseFloat(priceEl.getAttribute('data-target'));
+            const duration = 1500; // ms
+            const frameRate = 30; // ms per frame
+            const totalFrames = Math.round(duration / frameRate);
+            let frame = 0;
+            
+            const counter = setInterval(() => {
+                frame++;
+                const progress = frame / totalFrames;
+                // easeOutQuart
+                const ease = 1 - Math.pow(1 - progress, 4);
+                const current = target * ease;
+                
+                priceEl.innerText = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(current);
+                
+                if (frame === totalFrames) {
+                    clearInterval(counter);
+                    priceEl.innerText = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(target);
+                }
+            }, frameRate);
+        }
+    </script>
+</body>
+</html>

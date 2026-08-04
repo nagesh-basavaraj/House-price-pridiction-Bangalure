@@ -1,0 +1,17 @@
+{
+    "Location_Downtown": 0.02237159316152561,
+    "Location_Rural": 0.02381083027437926,
+    "Location_Suburban": 0.021314615391145257,
+    "Location_Urban": 0.024501728658155995,
+    "Condition_Excellent": 0.020675947048000562,
+    "Condition_Fair": 0.023878346465875024,
+    "Condition_Good": 0.02223855109675619,
+    "Condition_Poor": 0.02101773127702714,
+    "Garage_No": 0.016054292160044396,
+    "Garage_Yes": 0.014125883537926067,
+    "Area": 0.3349679320842612,
+    "Bedrooms": 0.08538261809643302,
+    "Bathrooms": 0.0680116043745662,
+    "Floors": 0.046844546218250856,
+    "YearBuilt": 0.2548037801556534
+}
